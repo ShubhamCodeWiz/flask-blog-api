@@ -1,0 +1,39 @@
+# docker-compose.yml
+
+version: '3.8' # Specifies the version of the Docker Compose file format
+
+services:
+  # Our Flask application service
+  web:
+    build: . # Build the image from the Dockerfile in the current directory
+    ports:
+      - "8000:8000" # Map host port 8000 to container port 8000
+    volumes:
+      # Mount the current directory on the host to /app in the container
+      # This allows for hot-reloading when you change code
+      - .:/app
+    environment:
+      # Pass environment variables to the container
+      - FLASK_APP=wsgi:app
+      - FLASK_ENV=development
+      # This URL tells SQLAlchemy how to connect to our postgres service
+      - DATABASE_URL=postgresql://blog_user:blog_password@db:5432/blog_db
+    depends_on:
+      - db # This service will wait for the 'db' service to be ready before starting
+
+  # Our PostgreSQL database service
+  db:
+    image: postgres:14-alpine # Use an official PostgreSQL image from Docker Hub
+    volumes:
+      # This creates a "named volume" to persist database data
+      # The data will survive even if the container is removed
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      # These are required by the postgres image to initialize the database
+      - POSTGRES_USER=blog_user
+      - POSTGRES_PASSWORD=blog_password
+      - POSTGRES_DB=blog_db
+
+volumes:
+  # Declare the named volume used by the db service
+  postgres_data:
