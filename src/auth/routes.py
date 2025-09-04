@@ -8,6 +8,8 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
+    if not data or not data.get('username') or not data.get('password'):
+        return jsonify({"message" : "username or password missing"})
     username = data.get('username', None)
     password = data.get('password', None)
 
